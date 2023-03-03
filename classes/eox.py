@@ -104,6 +104,7 @@ class EOX:
         
         # There is a potential that the replacement product ID given is also end of life
         # Double check PID data to make sure the replacements are not also end of life
+        # within the data set that was fed into this class
         # This may require some manual spot checking in the output file as well
         for product in pidData:
             migProductId = pidData[product]['EOXMigrationDetails']['MigrationProductId']
