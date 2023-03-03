@@ -1,5 +1,5 @@
 from datetime import datetime
-from sntc import SNTC
+from classes.sntc import SNTC
 import json
 import os
 import sys

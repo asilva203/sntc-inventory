@@ -1,6 +1,6 @@
 from datetime import datetime
-from sntc import SNTC
-from eox import EOX
+from classes.sntc import SNTC
+from classes.eox import EOX
 import json
 import os
 

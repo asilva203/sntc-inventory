@@ -3,7 +3,7 @@
 # and also provides an output of controllers that don't have any APs associated
 
 from datetime import datetime
-from sntc import SNTC
+from classes.sntc import SNTC
 import os
 
 # main function
