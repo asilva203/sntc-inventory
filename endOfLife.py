@@ -101,7 +101,7 @@ def main():
     pidSet = set()
     for item in eolInventory:
         pidSet.add(eolInventory[item]['eolData']['productId'])
-    print(pidSet)
+    #print(pidSet)
     services = EOX()
     eoxDict = services.getEoxData(pidSet)
 
