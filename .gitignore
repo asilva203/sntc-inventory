@@ -1,2 +1,7 @@
-# ignore credentials file
+# ignore credentials file and a few other things
 creds.py
+accessprocess.txt
+notes.txt
+Test Scripts
+Output
+Archive
