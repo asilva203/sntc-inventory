@@ -20,7 +20,14 @@ class EOX:
         }
         body = 'grant_type=client_credentials&client_id={}&client_secret={}'.format(clientId, clientSecret)
         r = requests.post(url, headers=headers, data=body)
+        print(clientId,clientSecret)
         r.close()
+        if r.ok:
+            pass
+        else:
+            print('Error obtaining the access token')
+            print(r)
+            sys.exit(0)
         token = r.json()['access_token']
         return token
 
