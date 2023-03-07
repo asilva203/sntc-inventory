@@ -23,12 +23,12 @@ class EOX:
     # https://developer.cisco.com/docs/support-apis/#!authentication
     def getAccessToken(self):
         # Retrieve the client ID and secret from the creds.py file
-        print('Retrieving client credentials...')
+        print('Retrieving EOX credentials...')
         clientId, clientSecret = creds.getEoxCreds()
         print('Done!')
         # Set URL for authentication along with the headers and body 
         # then send a POST, per the API documentation
-        url = 'https://cloudsso.cisco.com/as/token.oauth2'
+        url = 'https://id.cisco.com/oauth2/default/v1/token'
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
@@ -60,7 +60,7 @@ class EOX:
         pidData = {}
         # Loop through all the product ID's in the PID set
         for productId in pidSet:
-            uri = 'https://api.cisco.com/supporttools/eox/rest/5/EOXByProductID/1/{}'.format(productId)
+            uri = 'https://apix.cisco.com/supporttools/eox/rest/5/EOXByProductID/1/{}'.format(productId)
             print('Getting EOX for PID {}'.format(productId))
             r = requests.get(uri,headers=self.headers)
             r.close()

@@ -12,8 +12,10 @@ def main():
     filter = {
         'snapshot':'LATEST'
     }
+    print('Gathering EOL Hardware')
     eolChassis = sntcObject.getHardwareEol(filter)
-    print(len(eolChassis))
+    print('Done!')
+    print('{} objects found'.format(len(eolChassis)))
     hwInv = {}
     neInv = {}
     eolInventory = {}
@@ -58,8 +60,14 @@ def main():
                     eolInventory[item['hwInstanceId']] = {'eolData': item}
     
     # Gather all hardware and Network elements for processing
+    print('Gathering Hardware...')
     newHw = sntcObject.getHardware()
+    print('Done!')
+    print('{} Hardware elements found'.format(len(newHw)))
+    print('Gathering Network Elements...')
     newNe = sntcObject.getElements()
+    print('Done!')
+    print('{} Network elements found'.format(len(newNe)))
 
     # Make inventories of each one
     for item in newHw:

@@ -1,4 +1,4 @@
-# script to make calls to the API and get stuff back
+# script to make calls to the SNTC API and get stuff back
 import creds
 import requests
 import json
@@ -21,16 +21,27 @@ class SNTC:
         
     # Function for getting the access token from the OAUTH URL
     def getAccessToken(self):
+        print('Retrieving SNTC credentials...')
         clientId, clientSecret = creds.getSntcCreds()
+        print('Done!')
         url = 'https://cloudsso.cisco.com/as/token.oauth2'
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
         body = 'grant_type=client_credentials&client_id={}&client_secret={}'.format(clientId, clientSecret)
+        print('Retreiving access token...')
         r = requests.post(url, headers=headers, data=body)
         r.close()
-        token = r.json()['access_token']
-        return token
+        if r.ok:
+            token = r.json()['access_token']
+            print('Done!')
+            return token
+        else:
+            print('Error obtaining the access token')
+            resp = r.json()
+            for key in resp:
+                print('{}: {}'.format(key,resp[key]))
+            sys.exit(0)
 
     # List my SNTC customers in a list
     def listCustomers(self,customers):
