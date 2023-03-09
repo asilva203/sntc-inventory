@@ -21,44 +21,42 @@ def main():
     eolInventory = {}
 
     for item in eolChassis:
-        # I don't care if the next milestone is EoSale or Announced
-        # Commenting out to see if maybe this comes in handy
-        #if item['nextHwEolMilestone'] in ['EoSale','Announced']:
-        #    continue
         # Include Items that are currently LDoS
         if item['currentHwEolMilestone'] == 'LDoS':
+            # Check to see if the hardware instance ID is already in my keys
+            # If it is, check to see if the product ID exists, and skip if it does not
             if item['hwInstanceId'] in eolInventory.keys():
-                # Skip if there is no product ID
-                if item['productId'] == None:
+                if item['ProductId'] == None:
                     continue
                 else:
                     for key in item.keys():
-                        # If the item already exists in the inventory, skip
                         if item[key] == eolInventory[item['hwInstanceId']]['eolData'][key]:
                             continue
                         else:
                             eolInventory[item['hwInstanceId']]['eolData'][key] += ',{}'.format(item[key])
-
+            # If the hardware instance ID is not in the inventory, populate it
+            # and update the next milestone to be "Already LDOS" with the LDOS date
             else:
                 eolInventory[item['hwInstanceId']] = {'eolData': item}
                 eolInventory[item['hwInstanceId']]['eolData']['nextHwEolMilestone'] = 'Already LDoS'
                 eolInventory[item['hwInstanceId']]['eolData']['nextHwEolMilestoneDate'] = item['currentHwEolMilestoneDate']
-        # Look forward for two or three years, may need to refactor this and just filter in the file
-        elif item['nextHwEolMilestoneDate']:
-            if item['nextHwEolMilestoneDate'].split('-')[0] in ['2022','2023','2024','2025','2026','2027','2028','2029','2030']:
-                if item['hwInstanceId'] in eolInventory.keys():
-                    for key in item.keys():
-                        if item[key] == eolInventory[item['hwInstanceId']]['eolData'][key]:
-                            continue
-                        else:
-                            if type(eolInventory[item['hwInstanceId']]['eolData'][key]) == str:
-                                eolInventory[item['hwInstanceId']]['eolData'][key] += ',{}'.format(item[key])
-                            else:
-                                eolInventory[item['hwInstanceId']]['eolData'][key] = '{},{}'.format(str(eolInventory[item['hwInstanceId']]['eolData'][key]),str(item[key]))
-                            #eolInventory[item['hwInstanceId']]['eolData'][key] += ',{}'.format(item[key])
+        # Check to see if the remaining hardware instance IDs are in the inventory
+        # If it is, check to see if the data is the same or not
+        elif item['hwInstanceId'] in eolInventory.keys():
+            for key in item.keys():
+                # If the data is the same, continue to the next key
+                if item[key] == eolInventory[item['hwInstanceId']]['eolData'][key]:
+                    continue
+                # If the data is not the same, add the additional string, or other data to the field
                 else:
-                    eolInventory[item['hwInstanceId']] = {'eolData': item}
-    
+                    if type(eolInventory[item['hwInstanceId']]['eolData'][key]) == str:
+                        eolInventory[item['hwInstanceId']]['eolData'][key] += ',{}'.format(item[key])
+                    else:
+                        eolInventory[item['hwInstanceId']]['eolData'][key] = '{},{}'.format(str(eolInventory[item['hwInstanceId']]['eolData'][key]),str(item[key]))
+        # Finally simply populate the data if it's not there
+        else:
+            eolInventory[item['hwInstanceId']] = {'eolData': item}
+
     # Gather all hardware and Network elements for processing
     print('Gathering Hardware...')
     newHw = sntcObject.getHardware()
@@ -99,7 +97,7 @@ def main():
             eolInventory[item]['productFamily'] = 'Unknown'
             eolInventory[item]['parentName'] = 'Unknown'
             eolInventory[item]['Reachability'] = 'Unknown'
-    
+
     # Check for Output directory
     if not os.path.exists('Output'):
         os.mkdir('Output')
@@ -167,7 +165,5 @@ def main():
     file.close()
 
     print('DONE!!!')
-
-
-
+    
 main()
