@@ -144,7 +144,7 @@ def main():
             replacement = 'Unknown'
             eolLink = 'Unknown'
 
-        file.write('{},{},{},{},{},{},{},"{}","{}","{}","{}",{},{},{},{}\n'.format(
+        file.write('{},{},{},{},{},{},{},"{}","{}","{}","{}",{},"{}",{},{}\n'.format(
             eolInventory[item]['parentName'],
             eolInventory[item]['parentId'],
             eolInventory[item]['hwProductId'],
