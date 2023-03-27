@@ -26,7 +26,7 @@ def main():
             # Check to see if the hardware instance ID is already in my keys
             # If it is, check to see if the product ID exists, and skip if it does not
             if item['hwInstanceId'] in eolInventory.keys():
-                if item['ProductId'] == None:
+                if item['productId'] == None:
                     continue
                 else:
                     for key in item.keys():
