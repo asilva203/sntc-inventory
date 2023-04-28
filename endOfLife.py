@@ -112,9 +112,10 @@ def main():
     eoxDict = services.getEoxData(pidSet)
 
     file = open('Output/{}-EoL-{}.csv'.format(custName,datetime.now().strftime('%Y%m%d%H%M%S')),'w')
-    file.write('Parent,Parent ID,Hardware PID,EoL PID,Product Type,Product Family,Serial Number,Next EoL Milestone,Next EoL Milestone Date,Current EoL Milestone,Current EoL Milestone Date,LDoS Date,Replacement PID,EoL Link,Reachability\n')
+    file.write('Parent,Parent ID,Hardware PID,EoL PID,Product Type,Product Family,Serial Number,Next EoL Milestone,Next EoL Milestone Date,Current EoL Milestone,Current EoL Milestone Date,EoVulnerability Date,LDoS Date,Replacement PID,EoL Link,Reachability\n')
     for item in eolInventory:
         ldosDate = ''
+        eovulnDate = ''
         replacement = ''
         eolLink = ''
         pid = eolInventory[item]['eolData']['productId']
@@ -125,7 +126,15 @@ def main():
                 y = eoxDict[pid]['LastDateOfSupport']['value'].split('-')[0]
                 ldosDate = '{}/{}/{}'.format(m,d,y)
             else:
-                ldosDate = 'Unknown'
+                eovulnDate = 'Unknown'
+            if eoxDict[pid]['EndOfSecurityVulSupportDate']['value']:
+                m = eoxDict[pid]['EndOfSecurityVulSupportDate']['value'].split('-')[1]
+                d = eoxDict[pid]['EndOfSecurityVulSupportDate']['value'].split('-')[2]
+                y = eoxDict[pid]['EndOfSecurityVulSupportDate']['value'].split('-')[0]
+                eovulnDate = '{}/{}/{}'.format(m,d,y)
+            else:
+                eovulnDate = 'Unknown'
+            
             if eoxDict[pid]['EOXMigrationDetails']['MigrationProductId']:
                 replacement = eoxDict[pid]['EOXMigrationDetails']['MigrationProductId']
             elif eoxDict[pid]['EOXMigrationDetails']['MigrationProductName']:
@@ -144,7 +153,7 @@ def main():
             replacement = 'Unknown'
             eolLink = 'Unknown'
 
-        file.write('{},{},{},{},{},{},{},"{}","{}","{}","{}",{},"{}",{},{}\n'.format(
+        file.write('{},{},{},{},{},{},{},"{}","{}","{}","{}",{},{},"{}",{},{}\n'.format(
             eolInventory[item]['parentName'],
             eolInventory[item]['parentId'],
             eolInventory[item]['hwProductId'],
@@ -156,6 +165,7 @@ def main():
             eolInventory[item]['eolData']['nextHwEolMilestoneDate'],
             eolInventory[item]['eolData']['currentHwEolMilestone'],
             eolInventory[item]['eolData']['currentHwEolMilestoneDate'],
+            eovulnDate,
             ldosDate,
             replacement,
             eolLink,

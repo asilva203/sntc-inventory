@@ -86,9 +86,9 @@ def main():
     
 
     file = open('Output/{}-chassisInventory-{}.csv'.format(custName,datetime.now().strftime('%Y%m%d%H%M%S')),'w')
-    file.write('Hostname,IP Address,Instance ID,Product Type,Product Family,Product Name,Product ID,Serial Number,Reachability\n')
+    file.write('Hostname,IP Address,Instance ID,Product Type,Product Family,Product Name,Product ID,Software Version,Serial Number,Reachability\n')
     for item in hwInv:
-        file.write('{},{},{},{},{},{},{},{},{}\n'.format(
+        file.write('{},{},{},{},{},"{}",{},"{}",{},{}\n'.format(
             hwInv[item]['hostname'],
             hwInv[item]['ipAddress'],
             hwInv[item]['neInstanceId'],
@@ -96,6 +96,7 @@ def main():
             hwInv[item]['productFamily'],
             hwInv[item]['productName'],
             hwInv[item]['productId'],
+            hwInv[item]['swVersion'],
             hwInv[item]['serialNumber'],
             hwInv[item]['reachabilityStatus']
         ))

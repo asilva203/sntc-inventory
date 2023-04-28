@@ -115,3 +115,29 @@ class EOX:
         
         # Finally return the dictionary with the EOX data
         return pidData
+    
+    # Method to retrieve EOX data for a given PID from the API
+    # We leverage a "set" type as input to avoid duplicates
+    # API documentation is found at:
+    # https://developer.cisco.com/docs/support-apis/#!eox/get-eox-by-serial-numbers
+    def getEoxBySerial(self,serials):
+        # Create a dictionary to populate with all returned data from the API
+        serialData = {}
+        # Loop through the list of serials to pull data from the API
+        for serial in serials:
+            uri = 'https://apix.cisco.com/supporttools/eox/rest/5/EOXBySerialNumber/1/{}'.format(serial)
+            print('Getting EOX for Serial {}'.format(serial))
+            r = requests.get(uri,headers=self.headers)
+            r.close()
+            if r.ok:
+                if len(r.json()['EOXRecord']) > 1:
+                    print('Serial {} has more than one EOX record')
+                else:
+                    serialData[serial] = r.json()['EOXRecord'][0]
+
+            else:
+                print('Error collecting EOX data for PID {}'.format(serial))
+                print(r)
+                sys.exit(0)
+        
+        return serialData

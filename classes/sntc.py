@@ -60,13 +60,17 @@ class SNTC:
         r = requests.get(url, headers=self.headers)
         r.close()
         if r.ok:
-            customers = r.json()['data']
-            i = 1
-            for customer in customers:
-                customer['selection'] = i
-                i+=1
-            self.listCustomers(customers)
-            return customers
+            if r.json()['data']:
+                customers = r.json()['data']
+                i = 1
+                for customer in customers:
+                    customer['selection'] = i
+                    i+=1
+                self.listCustomers(customers)
+                return customers
+            else:
+                print('Customer list is empty. Please make sure you have API admin for SNTC customer assignments')
+                sys.exit(0)
         else:
             print('Error getting customers')
             print('HTTP Response:')
