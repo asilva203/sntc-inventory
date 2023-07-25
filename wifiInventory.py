@@ -5,6 +5,7 @@
 from datetime import datetime
 from classes.sntc import SNTC
 import os
+import json
 
 # main function
 def main():
@@ -24,10 +25,15 @@ def main():
             controllerInv[e['neInstanceId']] = ''
 
     for e in inventory:
+        if '9800' in e['productId']:
+            print(e['productId'])
+            print(e['neInstanceId'])
+        else:
+            pass
         if e['neInstanceId'] in controllerInv.keys():
             controllerInv[e['neInstanceId']] = e
             controllerInv[e['neInstanceId']]['APs'] = []
-    
+    print(controllerInv)
     for e in wifiElements:
         if 'Controller' in e['productFamily']:
             continue
