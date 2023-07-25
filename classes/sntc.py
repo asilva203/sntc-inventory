@@ -50,7 +50,7 @@ class SNTC:
             if customer['selection'] == i:
                 # Testing a few outputs
                 #print('{}: {} - {}'.format(i, customer['customerId'], customer['customerName']))
-                print('{}: {}'.format(i, customer['customerName']))
+                print('{}: {} - {}'.format(i, customer['customerName'], customer['customerId']))
                 i+=1
         return
 
