@@ -5,46 +5,56 @@
 from datetime import datetime
 from classes.sntc import SNTC
 import os
+import json
 
-# main function
 def main():
     sntcObject = SNTC()
     custName = sntcObject.customerName
+    print('Gathering all Network Elements')
     netElements = sntcObject.getElements()
-    inventory = sntcObject.getHardware(params={'productType':'Wireless'})
+    print('Done!!!')
+    # Don't need this after refactoring
+    #netHardware = sntcObject.getHardware(params={'productType':'Wireless'})
     controllerInv = {'unknown':{'swVersion':'unknown', 'productId':'unknown', 'APs':[]}}
     wifiElements = []
-
-    for ne in netElements:
-        if ne['productType'] == 'Wireless':
-            wifiElements.append(ne)
-
-    for e in wifiElements:
-        if 'Controller' in e['productFamily']:
-            controllerInv[e['neInstanceId']] = ''
-
-    for e in inventory:
-        if e['neInstanceId'] in controllerInv.keys():
-            controllerInv[e['neInstanceId']] = e
-            controllerInv[e['neInstanceId']]['APs'] = []
     
-    for e in wifiElements:
-        if 'Controller' in e['productFamily']:
+    # Pull out only the wireless product type, even though the filter should have
+    # already taken care of this
+    for element in netElements:
+        if element['productType'] == 'Wireless':
+            wifiElements.append(element)
+
+    # Look for only products that are a "Controller".  Assign the instance ID as the key
+    for element in wifiElements:
+        if 'Controller' in element['productFamily']:
+            controllerInv[element['neInstanceId']] = element
+            controllerInv[element['neInstanceId']]['APs'] = []
+
+    # Go through all the wifi elements to associate the APs with the respective controllers
+    for element in wifiElements:
+        # If the element is a controller, we don't care, already inventoried
+        if 'Controller' in element['productFamily']:
             continue
-        elif e['managedNeInstanceId'] in controllerInv.keys():
-            controllerInv[e['managedNeInstanceId']]['APs'].append(e)
+        # If the managed NE instance ID is a controller, add the AP to the AP list
+        elif element['managedNeInstanceId'] in controllerInv.keys():
+            controllerInv[element['managedNeInstanceId']]['APs'].append(element)
         else:
-            controllerInv['unknown']['APs'].append(e)
+            controllerInv['unknown']['APs'].append(element)
 
     # Check for Output directory
     if not os.path.exists('Output'):
         os.mkdir('Output')
     else: pass
 
+    # Output for WLCs with no APs
     noAps = open('Output/nowaps.csv','w')
-    noAps.write('NE Instance ID,Hostname,Product ID,Serial,Version,Reachability\n')
+    noAps.write('NE Instance ID,Hostname,Product ID,Version,Reachability\n')
+
+    # Output for WLCs with Access Points
     invFile = open('Output/{}-wirelessinventory-{}.csv'.format(custName,datetime.now().strftime('%Y%m%d%H%M%S')),'w')
     invFile.write('Name,PID,WLC Name,WLC Model,Version,Reachability\n')
+
+    # Write my output files
     for controller in controllerInv:
         if controllerInv[controller]['APs']:
             for AP in controllerInv[controller]['APs']:
@@ -53,15 +63,19 @@ def main():
             if controller == 'unknown':
                 pass
             else:
-                for e in wifiElements:
-                    if controller == e['neInstanceId']:
-                        controllerInv[controller]['hostname'] = e['hostname']
-                        controllerInv[controller]['reachabilityStatus'] = e['reachabilityStatus']
+                for element in wifiElements:
+                    if controller == element['neInstanceId']:
+                        controllerInv[controller]['hostname'] = element['hostname']
+                        controllerInv[controller]['reachabilityStatus'] = element['reachabilityStatus']
                         break
                     else: continue
-                noAps.write('{},{},{},{},{},{}\n'.format(controllerInv[controller]['neInstanceId'],controllerInv[controller]['hostname'],controllerInv[controller]['productId'],controllerInv[controller]['serialNumber'],controllerInv[controller]['swVersion'],controllerInv[controller]['reachabilityStatus']))
-    #print(json.dumps(controllerInv,indent=2))
+                noAps.write('{},{},{},{},{}\n'.format(controllerInv[controller]['neInstanceId'],controllerInv[controller]['hostname'],controllerInv[controller]['productId'],controllerInv[controller]['swVersion'],controllerInv[controller]['reachabilityStatus']))
+                # Original write line
+                #oAps.write('{},{},{},{},{},{}\n'.format(controllerInv[controller]['neInstanceId'],controllerInv[controller]['hostname'],controllerInv[controller]['productId'],controllerInv[controller]['serialNumber'],controllerInv[controller]['swVersion'],controllerInv[controller]['reachabilityStatus']))
+
+    # Close the Files
     noAps.close()
     invFile.close()
 
 main()
+
