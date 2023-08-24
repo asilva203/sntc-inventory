@@ -85,7 +85,7 @@ def main():
         hwInv[instance]['reachabilityStatus'] = neInv[hwInv[instance]['neInstanceId']]['reachabilityStatus']
     
 
-    file = open('Output/{}-chassisInventory-{}.csv'.format(custName,datetime.now().strftime('%Y%m%d%H%M%S')),'w')
+    file = open('Output/{}-chassisInventory-{}-{}.csv'.format(custName,productType,datetime.now().strftime('%Y%m%d%H%M%S')),'w')
     file.write('Hostname,IP Address,Instance ID,Product Type,Product Family,Product Name,Product ID,Software Version,Serial Number,Reachability\n')
     for item in hwInv:
         file.write('{},{},{},{},{},"{}",{},"{}",{},{}\n'.format(
