@@ -157,14 +157,11 @@ class Support:
             r = requests.get(uri,headers=self.headers)
             r.close()
             if r.ok:
-                    print(json.dumps(r.json(),indent=2))
-                    sys.exit(0)
                     coverageData[serial] = r.json()['serial_numbers'][0]
 
             else:
                 print('Error collecting coverage data for Serial {}'.format(serial))
                 print(r)
                 coverageData[serial] = 'None'
-                #sys.exit(0)
         
         return coverageData
