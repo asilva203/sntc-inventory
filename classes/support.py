@@ -8,8 +8,8 @@ import creds
 import json
 import sys
 
-class EOX:
-    # Initialize the EOX class and retrieve an access token for the API
+class Support:
+    # Initialize the Support class and retrieve an access token for the API
     # using the getAccessToken method
     def __init__(self):
         self.token = self.getAccessToken()
@@ -23,8 +23,8 @@ class EOX:
     # https://developer.cisco.com/docs/support-apis/#!authentication
     def getAccessToken(self):
         # Retrieve the client ID and secret from the creds.py file
-        print('Retrieving EOX credentials...')
-        clientId, clientSecret = creds.getEoxCreds()
+        print('Retrieving Support API credentials...')
+        clientId, clientSecret = creds.getSupportCreds()
         print('Done!')
         # Set URL for authentication along with the headers and body 
         # then send a POST, per the API documentation
@@ -116,7 +116,7 @@ class EOX:
         # Finally return the dictionary with the EOX data
         return pidData
     
-    # Method to retrieve EOX data for a given PID from the API
+    # Method to retrieve EOX data for a given Serial from the API
     # We leverage a "set" type as input to avoid duplicates
     # API documentation is found at:
     # https://developer.cisco.com/docs/support-apis/#!eox/get-eox-by-serial-numbers
@@ -136,8 +136,35 @@ class EOX:
                     serialData[serial] = r.json()['EOXRecord'][0]
 
             else:
-                print('Error collecting EOX data for PID {}'.format(serial))
+                print('Error collecting EOX data for Serial {}'.format(serial))
                 print(r)
-                sys.exit(0)
+                serialData[serial] = 'None'
+                #sys.exit(0)
         
         return serialData
+    
+    # Method to retrieve Coverage data for a given Serial from the API
+    # We leverage a "set" type as input to avoid duplicates
+    # API documentation is found at:
+    # https://developer.cisco.com/docs/support-apis/#!serial-number-to-information/get-coverage-status-by-serial-numbers
+    def getCoverageSummaryBySerial(self,serials):
+        # Create a dictionary to populate with all returned data from the API
+        coverageData = {}
+        # Loop through the list of serials to pull data from the API
+        for serial in serials:
+            uri = 'https://apix.cisco.com/sn2info/v2/coverage/summary/serial_numbers/{}'.format(serial)
+            print('Getting Coverage for Serial {}'.format(serial))
+            r = requests.get(uri,headers=self.headers)
+            r.close()
+            if r.ok:
+                    print(json.dumps(r.json(),indent=2))
+                    sys.exit(0)
+                    coverageData[serial] = r.json()['serial_numbers'][0]
+
+            else:
+                print('Error collecting coverage data for Serial {}'.format(serial))
+                print(r)
+                coverageData[serial] = 'None'
+                #sys.exit(0)
+        
+        return coverageData

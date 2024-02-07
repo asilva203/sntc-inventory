@@ -1,6 +1,6 @@
 from datetime import datetime
 from classes.sntc import SNTC
-from classes.eox import EOX
+from classes.support import Support
 import json
 import os
 
@@ -108,7 +108,7 @@ def main():
     for item in eolInventory:
         pidSet.add(eolInventory[item]['eolData']['productId'])
     #print(pidSet)
-    services = EOX()
+    services = Support()
     eoxDict = services.getEoxData(pidSet)
 
     file = open('Output/{}-EoL-{}.csv'.format(custName,datetime.now().strftime('%Y%m%d%H%M%S')),'w')
