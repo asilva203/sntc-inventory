@@ -24,7 +24,7 @@ class SNTC:
         print('Retrieving SNTC credentials...')
         clientId, clientSecret = creds.getSntcCreds()
         print('Done!')
-        url = 'https://cloudsso.cisco.com/as/token.oauth2'
+        url = 'https://id.cisco.com/oauth2/default/v1/token'
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
@@ -56,7 +56,7 @@ class SNTC:
 
     # Call to get customer information back
     def getCustomers(self):
-        url = 'https://apx.cisco.com/cs/api/v1/customer-info/customer-details'
+        url = 'https://apix.cisco.com/cs/api/v1/customer-info/customer-details'
         r = requests.get(url, headers=self.headers)
         r.close()
         if r.ok:
@@ -111,7 +111,7 @@ class SNTC:
 
     # Call to get customer inventories
     def getInventories(self):
-        url = 'https://apx.cisco.com/cs/api/v1/customer-info/inventory-groups?customerId={}'.format(self.customerId)
+        url = 'https://apix.cisco.com/cs/api/v1/customer-info/inventory-groups?customerId={}'.format(self.customerId)
         r = requests.get(url, headers=self.headers)
         r.close()
         if r.ok:
@@ -156,7 +156,7 @@ class SNTC:
 
     # Call to get hardware inventory
     def getHardware(self, params=None):
-        url = 'https://apx.cisco.com/cs/api/v1/inventory/hardware'
+        url = 'https://apix.cisco.com/cs/api/v1/inventory/hardware'
         queryString = '?customerId={}&inventoryName={}'.format(self.customerId,self.inventory)
         url += queryString
         if params:
@@ -173,7 +173,7 @@ class SNTC:
 
     # Call to get elements of hardware
     def getElements(self, params=None):
-        url = 'https://apx.cisco.com/cs/api/v1/inventory/network-elements'
+        url = 'https://apix.cisco.com/cs/api/v1/inventory/network-elements'
         queryString = '?customerId={}&inventoryName={}'.format(self.customerId,self.inventory)
         url += queryString
         if params:
@@ -190,7 +190,7 @@ class SNTC:
         
 
     def getHardwareEol(self, params=None):
-        url = 'https://apx.cisco.com/cs/api/v1/product-alerts/hardware-eol'
+        url = 'https://apix.cisco.com/cs/api/v1/product-alerts/hardware-eol'
         queryString = '?customerId={}&inventoryName={}'.format(self.customerId,self.inventory)
         url += queryString
         if params:
@@ -206,7 +206,7 @@ class SNTC:
             sys.exit(0)
     
     def getHardwareEolMilestones(self, params=None):
-        url = 'https://apx.cisco.com/cs/api/v1/product-alerts/hardware-eol-milestones-by-product-family'
+        url = 'https://apix.cisco.com/cs/api/v1/product-alerts/hardware-eol-milestones-by-product-family'
         queryString = '?customerId={}'.format(self.customerId)
         url += queryString
         if params:
@@ -223,7 +223,7 @@ class SNTC:
             sys.exit(0)
     
     def getCoverage(self, params=None):
-        url = 'https://apx.cisco.com/cs/api/v1/contracts/coverage'
+        url = 'https://apix.cisco.com/cs/api/v1/contracts/coverage'
         queryString = '?customerId={}&inventoryName={}'.format(self.customerId,self.inventory)
         url += queryString
         if params:
@@ -235,7 +235,7 @@ class SNTC:
         return coverage
 
     def getNotCovered(self, params=None):
-        url = 'https://apx.cisco.com/cs/api/v1/contracts/not-covered'
+        url = 'https://apix.cisco.com/cs/api/v1/contracts/not-covered'
         queryString = '?customerId={}&inventoryName={}'.format(self.customerId,self.inventory)
         url += queryString
         if params:
@@ -247,7 +247,7 @@ class SNTC:
         return notCovered
     
     def getContracts(self, params=None):
-        url = 'https://apx.cisco.com/cs/api/v1/contracts/contract-details'
+        url = 'https://apix.cisco.com/cs/api/v1/contracts/contract-details'
         queryString = '?customerId={}&inventoryName={}'.format(self.customerId,self.inventory)
         url += queryString
         if params:
@@ -259,7 +259,7 @@ class SNTC:
         return contracts
 
     def getBetaEol(self, params=None):
-        url = 'https://apx.cisco.com/cs/api/v1.0beta/product-alerts/hardware-eol'
+        url = 'https://apix.cisco.com/cs/api/v1.0beta/product-alerts/hardware-eol'
         queryString = '?customerId={}&inventoryName={}'.format(self.customerId,self.inventory)
         url += queryString
         if params:

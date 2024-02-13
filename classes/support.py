@@ -123,6 +123,18 @@ class Support:
     def getEoxBySerial(self,serials):
         # Create a dictionary to populate with all returned data from the API
         serialData = {}
+        # Make the call more efficient by sending 20 serial numbers at a time (maximum per the documentation)
+        bulkSerialList = []
+        # Loop commented out while i work on some things
+        #while serials:
+        #    if len(serials) > 20:
+        #        temp = ','.join(str(s) for s in serials[:20])
+        #        bulkSerialList.append(temp)
+        #        serials = serials[20:]
+        #    else:
+        #        temp = ','.join(str(s) for s in serials)
+        #        bulkSerialList.append(temp)
+        #        serials = []
         # Loop through the list of serials to pull data from the API
         for serial in serials:
             uri = 'https://apix.cisco.com/supporttools/eox/rest/5/EOXBySerialNumber/1/{}'.format(serial)
@@ -150,18 +162,32 @@ class Support:
     def getCoverageSummaryBySerial(self,serials):
         # Create a dictionary to populate with all returned data from the API
         coverageData = {}
+        # Make the call more efficient by sending 50 serials at a time (max for a single page return)
+        bulkSerialList = []
+        while serials:
+            if len(serials) > 50:
+                temp = ','.join(str(s) for s in serials[:50])
+                bulkSerialList.append(temp)
+                serials = serials[50:]
+            else:
+                temp = ','.join(str(s) for s in serials)
+                bulkSerialList.append(temp)
+                serials = []
         # Loop through the list of serials to pull data from the API
-        for serial in serials:
-            uri = 'https://apix.cisco.com/sn2info/v2/coverage/summary/serial_numbers/{}'.format(serial)
-            print('Getting Coverage for Serial {}'.format(serial))
+        for serials in bulkSerialList:
+            uri = 'https://apix.cisco.com/sn2info/v2/coverage/summary/serial_numbers/{}'.format(serials)
+            print('Getting Coverage for Serial {}'.format(serials))
             r = requests.get(uri,headers=self.headers)
             r.close()
             if r.ok:
-                    coverageData[serial] = r.json()['serial_numbers'][0]
+                    print(json.dumps(r.json()['pagination_response_record'],indent=2))
+                    data = r.json()['serial_numbers']
+                    for item in data:
+                        coverageData[item['sr_no']] = item
 
             else:
-                print('Error collecting coverage data for Serial {}'.format(serial))
+                print('Error collecting coverage data for Serials {}'.format(serials))
                 print(r)
-                coverageData[serial] = 'None'
+                
         
         return coverageData
