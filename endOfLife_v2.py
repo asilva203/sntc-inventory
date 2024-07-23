@@ -382,6 +382,7 @@ def createOutput(inv):
     file = open(filename,'w')
     file.write('Parent Name,'+
                'Hostname,'+
+               'IP Address,'+
                'Hardware PID,'+
                'Product Type,'+
                'Product Family,'+
@@ -397,7 +398,8 @@ def createOutput(inv):
                'Hardware Replacement PID,'+
                'Hardware EoL Link,'+
                'Reachability,'+
-               'Notes\n'
+               'Notes'+
+               '\n'
     )
     # Loop through the inventory to get the data that we need
     for hwid in inv:
@@ -407,6 +409,7 @@ def createOutput(inv):
             hostname = inv[hwid]['networkElement']['hostname']
         else:
             hostname = 'N/A'
+        ipAddress = inv[hwid]['networkElement']['ipAddress']
         hardwarePid = inv[hwid]['hardware']['productId']
         productType = inv[hwid]['hardware']['productType']
         productFamily = inv[hwid]['hardware']['productFamily']
@@ -454,17 +457,17 @@ def createOutput(inv):
                 replacementPid = inv[hwid]['EOXRecord'][0]['EOXMigrationDetails']['MigrationProductId']
             elif inv[hwid]['EOXRecord'][0]['EOXMigrationDetails']['MigrationInformation']:
                 replacementPid = inv[hwid]['EOXRecord'][0]['EOXMigrationDetails']['MigrationInformation']
+            elif inv[hwid]['EOXRecord'][0]['EOXMigrationDetails']['MigrationProductName']:
+                replacementPid = inv[hwid]['EOXRecord'][0]['EOXMigrationDetails']['MigrationProductName']
             else:
                 replacementPid = 'None'
         else:
             replacementPid = 'None'
-    
-        if parentName == 'MSD-WAN_AGG02-F33':
-            print(json.dumps(inv[hwid],indent=2))
 
-        file.write('{},{},{},{},{},{},{},"{}","{}",{},"{}",{},{},{},{},{},{},{}\n'.format(
+        file.write('{},{},{},{},{},{},{},{},"{}","{}",{},"{}",{},{},{},{},{},{},{}\n'.format(
             parentName,
             hostname,
+            ipAddress,
             hardwarePid,
             productType,
             productFamily,
@@ -484,10 +487,7 @@ def createOutput(inv):
         ))
 
                     
-    file.close() 
-
-
-
+    file.close()
 
     print('Done!')
 

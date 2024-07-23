@@ -197,6 +197,7 @@ def createOutput(swEolInventory):
     file = open(filename,'w')
     # Write the initial header for the CSV file
     file.write('Parent,'+
+               'IP Address,'+
                'Product ID,'+
                'Product Type,'+
                'Product Family,'+
@@ -215,9 +216,9 @@ def createOutput(swEolInventory):
     
     # Run through the inventory and fill out all the fields
     for neid in swEolInventory:
-        file.write('{},{},{},{},{},"{}",{},{},{},{},{},{},{},{},{}\n'.format(
+        file.write('{},{},{},{},{},{},"{}",{},{},{},{},{},{},{},{},{}\n'.format(
             swEolInventory[neid]['hostname'],
-            swEolInventory[neid]['managedNeInstanceId'],
+            swEolInventory[neid]['ipAddress'],
             swEolInventory[neid]['productId'],
             swEolInventory[neid]['productType'],
             swEolInventory[neid]['productFamily'],
