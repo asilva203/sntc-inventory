@@ -48,8 +48,6 @@ class SNTC:
         i = 1
         for customer in customers:
             if customer['selection'] == i:
-                # Testing a few outputs
-                #print('{}: {} - {}'.format(i, customer['customerId'], customer['customerName']))
                 print('{}: {} - {}'.format(i, customer['customerName'], customer['customerId']))
                 i+=1
         return
@@ -71,6 +69,10 @@ class SNTC:
             else:
                 print('Customer list is empty. Please make sure you have API admin for SNTC customer assignments')
                 sys.exit(0)
+        elif r.status_code == 504:
+            print('Error 504.  API Gateway timed out while getting customers.  Trying again...')
+            customers = self.getCustomers()
+            return customers
         else:
             print('Error getting customers')
             print('HTTP Response:')
@@ -122,6 +124,10 @@ class SNTC:
                 i+=1
             self.listInventories(inventories)
             return inventories
+        elif r.status_code == 504:
+            print('Error 504.  API Gateway timed out while getting customer inventories.  Trying again...')
+            inventories = self.getInventories()
+            return inventories
         else:
             print('Error getting inventories')
             print('HTTP Response:')
@@ -167,11 +173,15 @@ class SNTC:
         if r.ok:
             hardware = r.json()['data']
             return hardware
+        elif r.status_code == 504:
+            print('Error 504.  API Gateway Timed out getting hardware data.  Trying again...')
+            hardware = self.getHardware(params)
+            return hardware
         else:
             print(r)
             sys.exit(0)
 
-    # Call to get elements of hardware
+    # Call to get elements of hardware/network elements
     def getElements(self, params=None):
         url = 'https://apix.cisco.com/cs/api/v1/inventory/network-elements'
         queryString = '?customerId={}&inventoryName={}'.format(self.customerId,self.inventory)
@@ -184,11 +194,15 @@ class SNTC:
         if r.ok:
             elements = r.json()['data']
             return elements
+        elif r.status_code == 504:
+            print('Error 504.  API Gateway Timed out getting Network Element data.  Trying again...')
+            elements = self.getElements(params)
+            return elements
         else:
             print(r)
             sys.exit(0)
         
-
+    # Call to get end of life hardware
     def getHardwareEol(self, params=None):
         url = 'https://apix.cisco.com/cs/api/v1/product-alerts/hardware-eol'
         queryString = '?customerId={}&inventoryName={}'.format(self.customerId,self.inventory)
@@ -201,27 +215,78 @@ class SNTC:
         if r.ok:
             eolHw = r.json()['data']
             return eolHw
+        elif r.status_code == 504:
+            print('Error 504.  API Gateway Timed out getting hardware end of life data.  Trying again...')
+            eolHw = self.getHardwareEol(params)
+            return eolHw
         else:
             print(r)
             sys.exit(0)
-    
-    def getHardwareEolMilestones(self, params=None):
-        url = 'https://apix.cisco.com/cs/api/v1/product-alerts/hardware-eol-milestones-by-product-family'
-        queryString = '?customerId={}'.format(self.customerId)
+
+    # Call to get end of life software
+    def getSwEol(self, params=None):
+        url = 'https://apix.cisco.com/cs/api/v1/product-alerts/software-eol'
+        queryString = '?customerId={}&inventoryName={}'.format(self.customerId,self.inventory)
         url += queryString
         if params:
             for param in params:
                 url += '&{}={}'.format(param, params[param])
         r = requests.get(url, headers=self.headers)
-        print(r.text)
-        r.close()
+        r.close
         if r.ok:
-            eolHwMilestones = r.json()['data']
-            return eolHwMilestones
+            eolSw = r.json()['data']
+            return eolSw
+        elif r.status_code == 504:
+            print('Error 504.  API Gateway Timed out getting software end of life data.  Trying again...')
+            eolSw = self.getSwEol(params)
+            return eolSw
+        else:
+            print(r)
+            sys.exit(0)
+
+    # Call to get bulletins for end of life software
+    def getSwEolBulletins(self, params=None):
+        url = 'https://apix.cisco.com/cs/api/v1/product-alerts/software-eol-bulletins'
+        if params:
+            url += '?'
+            for param in params:
+                url += '{}={}&'.format(param, params[param])
+            url = url[:-1]
+        r = requests.get(url, headers=self.headers)
+        r.close
+        if r.ok:
+            bulletins = r.json()['data']
+            return bulletins
+        elif r.status_code == 504:
+            print('Error 504.  API Gateway Timed out getting software end of life bulletins.  Trying again...')
+            bulletins = self.getSwEolBulletins(params)
+            return bulletins
+        else:
+            print(r)
+            sys.exit(0)
+
+    # Call to get bulletins for end of life hardware
+    def getHwEolBulletins(self, params=None):
+        url = 'https://apix.cisco.com/cs/api/v1/product-alerts/hardware-eol-bulletins'
+        if params:
+            url += '?'
+            for param in params:
+                url += '{}={}&'.format(param, params[param])
+            url = url[:-1]
+        r = requests.get(url, headers=self.headers)
+        r.close
+        if r.ok:
+            bulletins = r.json()['data']
+            return bulletins
+        elif r.status_code == 504:
+            print('Error 504.  API Gateway Timed out getting hardware end of life bulletins.  Trying again...')
+            bulletins = self.getHwEolBulletins(params)
+            return bulletins
         else:
             print(r)
             sys.exit(0)
     
+    # Call to get items covered under contract
     def getCoverage(self, params=None):
         url = 'https://apix.cisco.com/cs/api/v1/contracts/coverage'
         queryString = '?customerId={}&inventoryName={}'.format(self.customerId,self.inventory)
@@ -234,6 +299,7 @@ class SNTC:
         coverage = r.json()['data']
         return coverage
 
+    # Call to get items NOT covered under contract
     def getNotCovered(self, params=None):
         url = 'https://apix.cisco.com/cs/api/v1/contracts/not-covered'
         queryString = '?customerId={}&inventoryName={}'.format(self.customerId,self.inventory)
@@ -246,6 +312,7 @@ class SNTC:
         notCovered = r.json()['data']
         return notCovered
     
+    # Call to get contract details
     def getContracts(self, params=None):
         url = 'https://apix.cisco.com/cs/api/v1/contracts/contract-details'
         queryString = '?customerId={}&inventoryName={}'.format(self.customerId,self.inventory)
@@ -255,18 +322,5 @@ class SNTC:
                 url += '&{}={}'.format(param, params[param])
         r = requests.get(url, headers=self.headers)
         r.close()
-        contracts = r.json()['data']
-        return contracts
-
-    def getBetaEol(self, params=None):
-        url = 'https://apix.cisco.com/cs/api/v1.0beta/product-alerts/hardware-eol'
-        queryString = '?customerId={}&inventoryName={}'.format(self.customerId,self.inventory)
-        url += queryString
-        if params:
-            for param in params:
-                url += '&{}={}'.format(param, params[param])
-        r = requests.get(url, headers=self.headers)
-        r.close()
-        print(r.text)
         contracts = r.json()['data']
         return contracts

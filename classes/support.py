@@ -7,6 +7,7 @@ import requests
 import creds
 import json
 import sys
+import urllib.parse
 
 class Support:
     # Initialize the Support class and retrieve an access token for the API
@@ -66,86 +67,76 @@ class Support:
             r.close()
             # Check to make sure the return status is good
             if r.ok:
-                # If return status is good, check to see if we have more than one record in the response
-                if len(r.json()['EOXRecord']) > 1:
-                    # Populate the data dictionary with the first entry
-                    pidData[productId] = r.json()['EOXRecord'][0]
-                    print('More than 1 EoX record for PID {}'.format(productId))
-                    # Check the remaining entries in order to add any additonal details around
-                    # potential migration product ID's or names
-                    for entry in r.json()['EOXRecord'][1:]:
-                        pidData[productId]['EOXMigrationDetails']['MigrationProductId'] += ' or {}'.format(entry['EOXMigrationDetails']['MigrationProductId'])
-                        pidData[productId]['EOXMigrationDetails']['MigrationProductName'] += ' or {}'.format(entry['EOXMigrationDetails']['MigrationProductName'])
-                        # If there is nothing the Migration Product ID details, simply erase it
-                        if pidData[productId]['EOXMigrationDetails']['MigrationProductId'] == ' or ':
-                            pidData[productId]['EOXMigrationDetails']['MigrationProductId'] = ''
-                        else: pass
-                        # If there is nothing in the Migration Product Name details, simply erase it
-                        if pidData[productId]['EOXMigrationDetails']['MigrationProductName'] == ' or ':
-                            pidData[productId]['EOXMigrationDetails']['MigrationProductName'] = ''
-                        else: pass
                 # If the response length is 0, there is no EOX data for that particular PID
-                elif len(r.json()['EOXRecord']) == 0:
+                if len(r.json()['EOXRecord']) == 0:
                     print('No EoX data for PID {}'.format(productId))
-                # If there is an Error record within the response, print it out
-                # There's probably a better place to check for this
-                elif 'EOXError' in r.json()['EOXRecord'][0].keys():
-                    print('EOX Error for PID {},{}'.format(productId,r.json()['EOXRecord'][0]['EOXError']['ErrorDescription']))
-                # If there is only one record and there are no errors, populate the
-                # data dictionary that will be returned
+                # Otherwise, just add the data and send it back.  There could be more than one record in the data
                 else:
-                    pidData[productId] = r.json()['EOXRecord'][0]
-            # If there is an issue with the reponse data, print an error, along with the PID
-            # and response details, and exit the program
+                    pidData[productId] = r.json()['EOXRecord']
             else:
                 print('Error collecting EOX data for PID {}'.format(productId))
                 print(r)
                 sys.exit(0)
-        
-        # There is a potential that the replacement product ID given is also end of life
-        # Double check PID data to make sure the replacements are not also end of life
-        # within the data set that was fed into this class
-        # This may require some manual spot checking in the output file as well
-        for product in pidData:
-            migProductId = pidData[product]['EOXMigrationDetails']['MigrationProductId']
-            if migProductId in pidData.keys():
-                pidData[product]['EOXMigrationDetails'] = pidData[migProductId]['EOXMigrationDetails']
-            else:
-                continue
+        #FIND A BETTER PLACE TO DO THIS
+        ## There is a potential that the replacement product ID given is also end of life
+        ## Double check PID data to make sure the replacements are not also end of life
+        ## within the data set that was fed into this class
+        ## This may require some manual spot checking in the output file as well
+        #for product in pidData:
+        #    migProductId = pidData[product]['EOXMigrationDetails']['MigrationProductId']
+        #    if migProductId in pidData.keys():
+        #        pidData[product]['EOXMigrationDetails'] = pidData[migProductId]['EOXMigrationDetails']
+        #    else:
+        #        continue
         
         # Finally return the dictionary with the EOX data
         return pidData
     
+    def getProductMigrationDetails(self,pidSet):
+        data = self.getEoxData(pidSet)
+        migInventory = {}
+        for pid in data:
+            migInventory[pid] = {'EOXMigrationDetails': {'MigrationInformation':'','MigrationProductId':''}}
+            for entry in data[pid]:
+                migInventory[pid]['EOXMigrationDetails']['MigrationInformation'] += '{} or '.format(entry['EOXMigrationDetails']['MigrationInformation'])
+                migInventory[pid]['EOXMigrationDetails']['MigrationProductId'] += '{} or '.format(entry['EOXMigrationDetails']['MigrationProductId'])
+            migInventory[pid]['EOXMigrationDetails']['MigrationInformation'] = migInventory[pid]['EOXMigrationDetails']['MigrationInformation'][:-4]
+            migInventory[pid]['EOXMigrationDetails']['MigrationProductId'] = migInventory[pid]['EOXMigrationDetails']['MigrationProductId'][:-4]
+        return migInventory
+
+
+
     # Method to retrieve EOX data for a given Serial from the API
-    # We leverage a "set" type as input to avoid duplicates
+    # We leverage a "set" type as input to avoid duplicates but convert to list for API call
     # API documentation is found at:
     # https://developer.cisco.com/docs/support-apis/#!eox/get-eox-by-serial-numbers
+    # Work in progress
     def getEoxBySerial(self,serials):
-        # Create a dictionary to populate with all returned data from the API
+        # Create a dictionary to populate with all returned data from the API and convert the serials set to a list
         serialData = {}
+        serialList = list(serials)
         # Make the call more efficient by sending 20 serial numbers at a time (maximum per the documentation)
         bulkSerialList = []
-        # Loop commented out while i work on some things
-        #while serials:
-        #    if len(serials) > 20:
-        #        temp = ','.join(str(s) for s in serials[:20])
-        #        bulkSerialList.append(temp)
-        #        serials = serials[20:]
-        #    else:
-        #        temp = ','.join(str(s) for s in serials)
-        #        bulkSerialList.append(temp)
-        #        serials = []
+        # Create the Bulk Serial List to send batches of 20 serial numbers at a time
+        while serialList:
+            if len(serialList) > 20:
+                temp = ','.join(str(s) for s in serialList[:20])
+                bulkSerialList.append(temp)
+                serialList = serialList[20:]
+            else:
+                temp = ','.join(str(s) for s in serialList)
+                bulkSerialList.append(temp)
+                serialList = []
         # Loop through the list of serials to pull data from the API
-        for serial in serials:
+        for serial in bulkSerialList:
             uri = 'https://apix.cisco.com/supporttools/eox/rest/5/EOXBySerialNumber/1/{}'.format(serial)
             print('Getting EOX for Serial {}'.format(serial))
             r = requests.get(uri,headers=self.headers)
             r.close()
             if r.ok:
-                if len(r.json()['EOXRecord']) > 1:
-                    print('Serial {} has more than one EOX record')
-                else:
-                    serialData[serial] = r.json()['EOXRecord'][0]
+                for record in r.json()['EOXRecord']:
+                    for s in record['EOXInputValue'].split(','):
+                        serialData[s] = record
 
             else:
                 print('Error collecting EOX data for Serial {}'.format(serial))
@@ -191,3 +182,54 @@ class Support:
                 
         
         return coverageData
+    
+    # Work in Progress
+    def getSwEox(self,swSet):
+        swData = {}
+        for sw in swSet:
+            swType = urllib.parse.quote(sw.split(',')[0])
+            #swVer = urllib.parse.quote(sw.split(',')[1])
+            swVer = sw.split(',')[1]
+            uri = 'https://apix.cisco.com/supporttools/eox/rest/5/EOXBySWReleaseString/1?input1={},{}'.format(swVer,swType)
+            r = requests.get(uri,headers=self.headers)
+            r.close()
+            if r.ok:
+                #print(json.dumps(r.json()['EOXRecord'][0],indent=2))
+                if 'EOXError' in r.json()['EOXRecord'][0]:
+                    print(uri)
+                    print(r.json().keys())
+                    print(json.dumps(r.json(),indent=2))
+                    print('Error with EOX Data')
+                else:
+                    swData[sw] = r.json()['EOXRecord']
+        return swData
+
+    def getSuggestedReleaseByPid(self,pidSet):
+        suggestData = {}
+        for pid in pidSet:
+            uri = 'https://apix.cisco.com/software/suggestion/v2/suggestions/releases/productIds/{}'.format(pid)
+            print('Getting software suggestion for pid {}...'.format(pid))
+            r = requests.get(uri,headers=self.headers)
+            r.close()
+            if r.ok:
+                suggestData[pid] = r.json()['productList']
+            else:
+                print('Error getting suggest for pid {}'.format(pid))
+                print(r)
+                sys.exit(0)
+        return suggestData
+    
+    def getMdfInfoByPid(self,pidSet):
+        mdfData = {}
+        for pid in pidSet:
+            uri = 'https://apix.cisco.com/product/v1/information/product_ids_mdf/{}'.format(pid)
+            print('Getting MDF info for pid {}...'.format(pid))
+            r = requests.get(uri,headers=self.headers)
+            r.close()
+            if r.ok:
+                mdfData[pid] = r.json()['productList']
+            else:
+                print('Error getting suggest for pid {}'.format(pid))
+                print(r)
+                sys.exit(0)
+        return mdfData
