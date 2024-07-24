@@ -454,17 +454,17 @@ def createOutput(inv):
         if inv[hwid]['EOXRecord']:
             #print(json.dumps(inv[hwid]['EOXRecord'][0],indent=2))
             if inv[hwid]['EOXRecord'][0]['EOXMigrationDetails']['MigrationProductId']:
-                replacementPid = inv[hwid]['EOXRecord'][0]['EOXMigrationDetails']['MigrationProductId']
+                replacementPid = inv[hwid]['EOXRecord'][0]['EOXMigrationDetails']['MigrationProductId'].strip()
             elif inv[hwid]['EOXRecord'][0]['EOXMigrationDetails']['MigrationInformation']:
-                replacementPid = inv[hwid]['EOXRecord'][0]['EOXMigrationDetails']['MigrationInformation']
+                replacementPid = inv[hwid]['EOXRecord'][0]['EOXMigrationDetails']['MigrationInformation'].strip()
             elif inv[hwid]['EOXRecord'][0]['EOXMigrationDetails']['MigrationProductName']:
-                replacementPid = inv[hwid]['EOXRecord'][0]['EOXMigrationDetails']['MigrationProductName']
+                replacementPid = inv[hwid]['EOXRecord'][0]['EOXMigrationDetails']['MigrationProductName'].replace('\n\n','\n').replace('\n',' or ')
             else:
                 replacementPid = 'None'
         else:
             replacementPid = 'None'
 
-        file.write('{},{},{},{},{},{},{},{},"{}","{}",{},"{}",{},{},{},{},{},{},{}\n'.format(
+        file.write('{},{},{},{},{},{},{},{},"{}","{}",{},"{}",{},{},{},"{}",{},{},{}\n'.format(
             parentName,
             hostname,
             ipAddress,
