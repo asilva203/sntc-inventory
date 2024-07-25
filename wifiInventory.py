@@ -5,7 +5,18 @@
 from datetime import datetime
 from classes.sntc import SNTC
 import os
+import platform
+import subprocess
 import json
+
+def pointToFile(filename):
+    if platform.system() == 'Darwin':
+        subprocess.call(['open', '-R', filename])
+    elif platform.system() == 'Windows':
+        subprocess.Popen(r'explorer /select,"{}"'.format(filename))
+    else:
+        pass
+    return
 
 def main():
     sntcObject = SNTC()
@@ -51,7 +62,8 @@ def main():
     noAps.write('NE Instance ID,Hostname,Product ID,Version,Reachability\n')
 
     # Output for WLCs with Access Points
-    invFile = open('Output/{}-wirelessinventory-{}.csv'.format(custName,datetime.now().strftime('%Y%m%d%H%M%S')),'w')
+    filename = 'Output/{}-wirelessinventory-{}.csv'.format(custName,datetime.now().strftime('%Y%m%d%H%M%S'))
+    invFile = open(filename,'w')
     invFile.write('Name,PID,WLC Name,WLC Model,Version,Reachability\n')
 
     # Write my output files
@@ -76,6 +88,9 @@ def main():
     # Close the Files
     noAps.close()
     invFile.close()
+
+    filePath = os.path.abspath(filename)
+    pointToFile(filePath)
 
 main()
 
