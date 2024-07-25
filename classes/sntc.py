@@ -338,7 +338,7 @@ class SNTC:
             advisories = r.json()['data']
             return advisories
         elif r.status_code == 504:
-            print('Error 504.  API Gateway Timed out getting hardware data.  Trying again...')
+            print('Error 504.  API Gateway Timed out getting advisory data.  Trying again...')
             advisories = self.getSecurityAdvisories(params)
             return advisories
         else:
