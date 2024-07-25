@@ -324,3 +324,23 @@ class SNTC:
         r.close()
         contracts = r.json()['data']
         return contracts
+    
+    def getSecurityAdvisories(self, params=None):
+        url = 'https://apix.cisco.com/cs/api/v1/product-alerts/security-advisories'
+        queryString = '?customerId={}&inventoryName={}'.format(self.customerId,self.inventory)
+        url += queryString
+        if params:
+            for param in params:
+                url += '&{}={}'.format(param, params[param])
+        r = requests.get(url, headers=self.headers)
+        r.close()
+        if r.ok:
+            advisories = r.json()['data']
+            return advisories
+        elif r.status_code == 504:
+            print('Error 504.  API Gateway Timed out getting hardware data.  Trying again...')
+            advisories = self.getSecurityAdvisories(params)
+            return advisories
+        else:
+            print(r)
+            sys.exit(0)
