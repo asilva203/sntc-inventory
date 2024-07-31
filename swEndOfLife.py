@@ -136,14 +136,15 @@ def createSwEolInventory():
 
     # Now we can go through the Software EoL inventory to add more data to it
     print('Adding Network Element data to EoL Inventory...')
-    for neid in swEolInventory:
+    for neid in swEolInventory.copy():
         # If the neInstance ID in the EoL inventory is also found in the Network Element inventory
         if neid in neInv.keys():
             # Update the software inventory with the data from the Network Element inventory
             swEolInventory[neid].update(neInv[neid].copy())
         # Otherwise print an error message to troubleshoot later
         else:
-            print('ID {} not found in the Network Element Inventory'.format(neid))
+            print('ID {} not found in the Network Element Inventory.  Removing from inventory'.format(neid))
+            swEolInventory.pop(neid)
     print('Done!')
 
     # Clean up the extra entries in the software EoL data
@@ -216,6 +217,8 @@ def createOutput(swEolInventory):
     
     # Run through the inventory and fill out all the fields
     for neid in swEolInventory:
+        #print('New')
+        #print(json.dumps(swEolInventory[neid],indent=2))
         file.write('{},{},{},{},{},{},"{}",{},{},{},{},{},{},{},{},{}\n'.format(
             swEolInventory[neid]['hostname'],
             swEolInventory[neid]['ipAddress'],

@@ -2,7 +2,19 @@ from classes.sntc import SNTC
 from datetime import datetime
 import json
 import sys
+import os
+import platform
+import subprocess
 import requests
+
+def pointToFile(filename):
+    if platform.system() == 'Darwin':
+        subprocess.call(['open', '-R', filename])
+    elif platform.system() == 'Windows':
+        subprocess.Popen(r'explorer /select,"{}"'.format(filename))
+    else:
+        pass
+    return
 
 def listProductTypes(hwTypes):
     options = {}
@@ -85,7 +97,8 @@ def main():
         hwInv[instance]['reachabilityStatus'] = neInv[hwInv[instance]['neInstanceId']]['reachabilityStatus']
     
 
-    file = open('Output/{}-chassisInventory-{}-{}.csv'.format(custName,productType,datetime.now().strftime('%Y%m%d%H%M%S')),'w')
+    filename = 'Output/{}-chassisInventory-{}-{}.csv'.format(custName,productType,datetime.now().strftime('%Y%m%d%H%M%S'))
+    file = open(filename,'w')
     file.write('Hostname,IP Address,Instance ID,Product Type,Product Family,Product Name,Product ID,Software Version,Serial Number,Reachability\n')
     for item in hwInv:
         file.write('{},{},{},{},{},"{}",{},"{}",{},{}\n'.format(
@@ -102,6 +115,9 @@ def main():
         ))
     file.close()
     print('DONE!')
+
+    filePath = os.path.abspath(filename)
+    pointToFile(filePath)
 
     
 

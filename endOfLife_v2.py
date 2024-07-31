@@ -363,11 +363,6 @@ def createEolInventory():
     #                print('bulletin exists')
     #            print(json.dumps(eol,indent =2))
     #print(hwEolInventory.keys())
-    #print(json.dumps(hwEolInventory[2050399920],indent=2))
-    #print(json.dumps(hwEolInventory[2050360408],indent=2))
-    #print(json.dumps(hwEolInventory[2050401880],indent=2))
-    #print(json.dumps(hwEolInventory[2050406254],indent=2))
-    #print(json.dumps(hwEolInventory[2103787877],indent=2))
     
 def createOutput(inv):
     # Create the output file
