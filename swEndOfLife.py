@@ -217,8 +217,6 @@ def createOutput(swEolInventory):
     
     # Run through the inventory and fill out all the fields
     for neid in swEolInventory:
-        #print('New')
-        #print(json.dumps(swEolInventory[neid],indent=2))
         file.write('{},{},{},{},{},{},"{}",{},{},{},{},{},{},{},{},{}\n'.format(
             swEolInventory[neid]['hostname'],
             swEolInventory[neid]['ipAddress'],
