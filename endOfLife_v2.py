@@ -400,18 +400,28 @@ def createOutput(inv):
     for hwid in inv:
         # Start with the easy ones first
         parentName = inv[hwid]['parent']['hostname']
-        if inv[hwid]['hardware']['productId'] == inv[hwid]['networkElement']['productId']:
-            hostname = inv[hwid]['networkElement']['hostname']
+        if 'networkElement' in inv[hwid].keys():
+            if inv[hwid]['hardware']['productId'] == inv[hwid]['networkElement']['productId']:
+                hostname = inv[hwid]['networkElement']['hostname']
+            else:
+                hostname = 'N/A'
+            ipAddress = inv[hwid]['networkElement']['ipAddress']
+            softwareType = inv[hwid]['networkElement']['swType']
+            softwareVersion = inv[hwid]['networkElement']['swVersion']
+            reachability = inv[hwid]['networkElement']['reachabilityStatus']
+            
+
         else:
             hostname = 'N/A'
-        ipAddress = inv[hwid]['networkElement']['ipAddress']
+            ipAddress = 'Unknown'
+            softwareType = 'Unknown'
+            softwareVersion = 'Unknown'
+            reachability = 'Unknown'
+
         hardwarePid = inv[hwid]['hardware']['productId']
         productType = inv[hwid]['hardware']['productType']
         productFamily = inv[hwid]['hardware']['productFamily']
         serialNumber = inv[hwid]['hardware']['serialNumber']
-        softwareType = inv[hwid]['networkElement']['swType']
-        softwareVersion = inv[hwid]['networkElement']['swVersion']
-        reachability = inv[hwid]['networkElement']['reachabilityStatus']
         replacementPid = ''
         hwEolLink = ''
         currentHwEolMilestone = ''

@@ -125,3 +125,6 @@ def main():
             print('item not found in network elements')
     file.close()
 main()
+
+if __name__ == '__main__':
+    main()

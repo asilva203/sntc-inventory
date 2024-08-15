@@ -91,10 +91,17 @@ def main():
         neInv[item['neInstanceId']] = item
     
     # Add the additional data from the network inventory to the hardware inventory
-    for instance in hwInv:
-        hwInv[instance]['hostname'] = neInv[hwInv[instance]['neInstanceId']]['hostname']
-        hwInv[instance]['ipAddress'] = neInv[hwInv[instance]['neInstanceId']]['ipAddress']
-        hwInv[instance]['reachabilityStatus'] = neInv[hwInv[instance]['neInstanceId']]['reachabilityStatus']
+    for hwInstanceId in hwInv:
+        #print(hwInstanceId)
+        #print(json.dumps(hwInv[hwInstanceId],indent=2))
+        if hwInv[hwInstanceId]['neInstanceId'] in neInv.keys():
+            hwInv[hwInstanceId]['hostname'] = neInv[hwInv[hwInstanceId]['neInstanceId']]['hostname']
+            hwInv[hwInstanceId]['ipAddress'] = neInv[hwInv[hwInstanceId]['neInstanceId']]['ipAddress']
+            hwInv[hwInstanceId]['reachabilityStatus'] = neInv[hwInv[hwInstanceId]['neInstanceId']]['reachabilityStatus']
+        else:
+            hwInv[hwInstanceId]['hostname'] = 'Unknown'
+            hwInv[hwInstanceId]['ipAddress'] = 'Unknown'
+            hwInv[hwInstanceId]['reachabilityStatus'] = 'Unknown'
     
 
     filename = 'Output/{}-chassisInventory-{}-{}.csv'.format(custName,productType,datetime.now().strftime('%Y%m%d%H%M%S'))
