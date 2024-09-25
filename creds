@@ -5,7 +5,7 @@ def getSntcCreds():
     clientSecret = 'getyourown'
     return clientId, clientSecret
 
-def getEoxCreds():
+def getSupportCreds():
     clientId = 'getyourown'
     clientSecret = 'getyourown'
     return clientId, clientSecret

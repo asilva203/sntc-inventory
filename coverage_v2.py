@@ -15,6 +15,12 @@ def pointToFile(filename):
         pass
     return
 
+def createInventory(data,key):
+    inventory = {}
+    for item in data:
+        inventory[item[key]] = item.copy()
+    return inventory
+
 def main():
     sntcObject = SNTC()
     custName = sntcObject.customerName
@@ -35,60 +41,118 @@ def main():
     ne = sntcObject.getElements(filter)
     
     invData = {}
-    hwInv = {}
-    neInv = {}
     assets = {}
+
     for item in coveredAssets:
-        assets[item['serialNumber']] = {
-            'Contract Number':item['contractNumber'],
-            'Coverage Status':item['coverageStatus'],
-            'Service Level':item['serviceLevel'],
-            'Coverage Start Date':item['coverageStartDate'].split('T')[0],
-            'Coverage End Date':item['coverageEndDate'].split('T')[0],
-            'Serial':item['serialNumber'],
-            'neInstanceId':item['neInstanceId']
-        }
+        assets[item['serialNumber']] = item.copy()
 
     for item in uncoveredAssets:
-        assets[item['serialNumber']] = {
-            'Contract Number':'N/A',
-            'Coverage Status':'INACTIVE',
-            'Service Level':'N/A',
-            'Coverage Start Date':'N/A',
-            'Coverage End Date':'N/A',
-            'Serial':item['serialNumber'],
-            'neInstanceId':item['neInstanceId']
-        }
+        assets[item['serialNumber']] = item.copy()
+        assets[item['serialNumber']].update({
+            'contractNumber':'N/A',
+            'coverageStatus':'INACTIVE',
+            'serviceLevel':'N/A',
+            'coverageStartDate':'N/A',
+            'coverageEndDate':'N/A'
+        })
 
-    for item in hw:
-        hwInv[item['serialNumber']] = item
-    for item in ne:
-        neInv[item['neInstanceId']] = item
+    #for item in coveredAssets:
+    #    assets[item['serialNumber']] = {
+    #        'Contract Number':item['contractNumber'],
+    #        'Coverage Status':item['coverageStatus'],
+    #        'Service Level':item['serviceLevel'],
+    #        'Coverage Start Date':item['coverageStartDate'].split('T')[0],
+    #        'Coverage End Date':item['coverageEndDate'].split('T')[0],
+    #        'Serial':item['serialNumber'],
+    #        'neInstanceId':item['neInstanceId']
+    #    }
+    #
+    #for item in uncoveredAssets:
+    #    assets[item['serialNumber']] = {
+    #        'Contract Number':'N/A',
+    #        'Coverage Status':'INACTIVE',
+    #        'Service Level':'N/A',
+    #        'Coverage Start Date':'N/A',
+    #        'Coverage End Date':'N/A',
+    #        'Serial':item['serialNumber'],
+    #        'neInstanceId':item['neInstanceId']
+    #    }
+    hwInv = createInventory(hw,'serialNumber')
+    neInv = createInventory(ne,'neInstanceId')
+    #for item in hw:
+    #    hwInv[item['serialNumber']] = item
+    #for item in ne:
+    #    neInv[item['neInstanceId']] = item
     
     for asset in assets:
         neInstanceId = assets[asset]['neInstanceId']
         if asset in hwInv.keys():
-            assets[asset]['Product Family'] = hwInv[asset]['productFamily']
-            assets[asset]['Product ID'] = hwInv[asset]['productId']
-            assets[asset]['Product Type'] = hwInv[asset]['productType']
+            assets[asset]['hardware'] = hwInv[asset].copy()
         else:
-            assets[asset]['Product Family'] = 'Unknown'
-            assets[asset]['Product ID'] = 'Unknown'
-            assets[asset]['Product Type'] = 'Unknown'
+            assets[asset]['hardware'] = {
+                'productFamily':'N/A',
+                'productId':'N/A',
+                'productType':'N/A',
+                'serialNumber':'N/A'
+                }
         if neInstanceId in neInv.keys():
-            assets[asset]['Hostname'] = neInv[neInstanceId]['hostname']
-            assets[asset]['Sys Name'] = neInv[neInstanceId]['sysName']
-            assets[asset]['Create Date'] = neInv[neInstanceId]['createDate'].split('T')[0]
-            assets[asset]['Reachability'] = neInv[neInstanceId]['reachabilityStatus']
+            assets[asset]['neData'] = neInv[neInstanceId].copy()
         else:
+            assets[asset]['neData'] = None
             print('Asset {} not found in NE inventory'.format(asset))
 
+    #for asset in assets:
+    #    neInstanceId = assets[asset]['neInstanceId']
+    #    if asset in hwInv.keys():
+    #        assets[asset]['Product Family'] = hwInv[asset]['productFamily']
+    #        assets[asset]['Product ID'] = hwInv[asset]['productId']
+    #        assets[asset]['Product Type'] = hwInv[asset]['productType']
+    #    else:
+    #        assets[asset]['Product Family'] = 'Unknown'
+    #        assets[asset]['Product ID'] = 'Unknown'
+    #        assets[asset]['Product Type'] = 'Unknown'
+    #    if neInstanceId in neInv.keys():
+    #        assets[asset]['Hostname'] = neInv[neInstanceId]['hostname']
+    #        assets[asset]['Sys Name'] = neInv[neInstanceId]['sysName']
+    #        assets[asset]['Create Date'] = neInv[neInstanceId]['createDate'].split('T')[0]
+    #        assets[asset]['Reachability'] = neInv[neInstanceId]['reachabilityStatus']
+    #    else:
+    #        print('Asset {} not found in NE inventory'.format(asset))
+
+    #print(assets.keys())
+    #print(json.dumps(assets['FCH2335DGHU'],indent=2))
+    
     filename = 'Output/{}-Coverage-{}.csv'.format(custName,datetime.now().strftime('%Y%m%d%H%M%S'))
     file = open(filename,'w')
 
-    file.write('Parent Hostname,Parent Sys Name,Product Family,PID,Product Type,Serial,Coverage Status,Service Level,Contract Number,Coverage Start Date,Coverage End Date,First Seen,Reachability\n')
+    file.write('Parent Hostname,'+
+               'Parent Sys Name,'+
+               'Product Family,'+
+               'PID,'+
+               'Product Type,'+
+               'Serial,'+
+               'Coverage Status,'+
+               'Service Level,'+
+               'Contract Number,'+
+               'Coverage Start Date,'+
+               'Coverage End Date,'+
+               'First Seen,'+
+               'Reachability\n')
     for asset in assets:
-        file.write('{},{},{},{},{},{},{},{},{},{},{},{},{}\n'.format(assets[asset]['Hostname'],assets[asset]['Sys Name'],assets[asset]['Product Family'],assets[asset]['Product ID'],assets[asset]['Product Type'],assets[asset]['Serial'],assets[asset]['Coverage Status'],assets[asset]['Service Level'],assets[asset]['Contract Number'],assets[asset]['Coverage Start Date'],assets[asset]['Coverage End Date'],assets[asset]['Create Date'],assets[asset]['Reachability']))
+        file.write('{},{},{},{},{},{},{},{},{},{},{},{},{}\n'.format(
+            assets[asset]['neData']['hostname'],
+            assets[asset]['neData']['sysName'],
+            assets[asset]['hardware']['productFamily'],
+            assets[asset]['hardware']['productId'],
+            assets[asset]['hardware']['productType'],
+            assets[asset]['hardware']['serialNumber'],
+            assets[asset]['coverageStatus'],
+            assets[asset]['serviceLevel'],
+            assets[asset]['contractNumber'],
+            assets[asset]['coverageStartDate'].split('T')[0],
+            assets[asset]['coverageEndDate'].split('T')[0],
+            assets[asset]['neData']['createDate'].split('T')[0],
+            assets[asset]['neData']['reachabilityStatus']))
     file.close()
 
     filePath = os.path.abspath(filename)
