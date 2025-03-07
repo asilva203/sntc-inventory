@@ -149,8 +149,26 @@ def createSwEolInventory():
 
     # Clean up the extra entries in the software EoL data
     for neid in swEolInventory:
+        # Check to see if there is even anything in the data
+        if len(swEolInventory[neid]['eolSwData']) == 0:
+            print('No entries found for {}, filling with unknown')
+            swEolInventory[neid]['eolSwData'].append(
+                {
+                    'swType': 'Unknown',
+                    'swVersion': 'Unknown',
+                    'currentSwEolMilestone': 'Unknown',
+                    'currentSwEolMilestoneDate': 'Unknown',
+                    'nextSwEolMilestone': 'Unknown',
+                    'nextSwEolMilestoneDate': 'Unknown',
+                    'bulletin':{
+                        'eoVulnerabilitySecuritySupport': 'Unknown',
+                        'lastDateOfSupport': 'Unknown',
+                        'url': 'Unknown'
+                    }
+                }
+            )
         # Check to see if there is more than one entry in the data
-        if len(swEolInventory[neid]['eolSwData']) > 1:
+        elif len(swEolInventory[neid]['eolSwData']) > 1:
             # I will be popping unneeded data, so I need to use the [:] notation
             for e in swEolInventory[neid]['eolSwData'][:]:
                 # Check if the software type and version are the same between the instance ID and the EoL Data
@@ -165,7 +183,22 @@ def createSwEolInventory():
                 continue
             else:
                 # If I end up seeing this, I will need to troubleshoot my code and find a proper piece of EoL Data
-                print('No matching data left for Instance ID {}'.format(neid))
+                print('No matching data left for Instance ID {}, filling with unknown'.format(neid))
+                swEolInventory[neid]['eolSwData'].append(
+                {
+                    'swType': 'Unknown',
+                    'swVersion': 'Unknown',
+                    'currentSwEolMilestone': 'Unknown',
+                    'currentSwEolMilestoneDate': 'Unknown',
+                    'nextSwEolMilestone': 'Unknown',
+                    'nextSwEolMilestoneDate': 'Unknown',
+                    'bulletin':{
+                        'eoVulnerabilitySecuritySupport': 'Unknown',
+                        'lastDateOfSupport': 'Unknown',
+                        'url': 'Unknown'
+                    }
+                }
+            )
 
         # Just make sure I am good with all the rest
         # I need to figure out how to handle version mismatches in the final data
@@ -217,6 +250,7 @@ def createOutput(swEolInventory):
     
     # Run through the inventory and fill out all the fields
     for neid in swEolInventory:
+        #print(json.dumps(swEolInventory[neid],indent=2))
         file.write('{},{},{},{},{},{},"{}",{},{},{},{},{},{},{},{},{}\n'.format(
             swEolInventory[neid]['hostname'],
             swEolInventory[neid]['ipAddress'],
